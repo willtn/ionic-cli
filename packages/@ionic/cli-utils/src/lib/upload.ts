@@ -8,7 +8,7 @@ import {
   IonicEnvironment,
 } from '../definitions';
 
-export async function upload(env: IonicEnvironment, { note, channelTag, metadata }: { note?: string, channelTag?: string, metadata?: Object}): Promise<DeploySnapshotRequest> {
+export async function upload(env: IonicEnvironment, { note, channelTag, metadata, version }: { note?: string, channelTag?: string, metadata?: Object, version?: string }): Promise<DeploySnapshotRequest> {
   const { createArchive } = await import('./utils/archive');
   const { DeployClient } = await import('./deploy');
 
@@ -28,7 +28,17 @@ export async function upload(env: IonicEnvironment, { note, channelTag, metadata
   zip.finalize();
 
   env.tasks.next('Requesting snapshot upload');
-  const snapshot = await deploy.requestSnapshotUpload({ note, user_metadata: metadata });
+  const snapshot = await deploy.requestSnapshotUpload({
+    android_version: {
+      eq: version
+    },
+    ios_version: {
+      eq: version
+      // we don't need min/max because we deploy to a version specific channel
+    },
+    note,
+    user_metadata: metadata
+  });
   const uploadTask = env.tasks.next('Uploading snapshot');
   await deploy.uploadSnapshot(snapshot, zip, (loaded, total) => {
     uploadTask.progress(loaded, total);

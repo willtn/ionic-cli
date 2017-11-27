@@ -44,6 +44,11 @@ From there, you can use Ionic View (${chalk.bold('https://ionicframework.com/pro
       type: Boolean,
       default: true,
     },
+    {
+      name: 'version',
+      description: 'Give this snapshot a version',
+      advanced: true,
+    },
     ...APP_SCRIPTS_OPTIONS,
   ],
 })
@@ -74,6 +79,14 @@ export class UploadCommand extends Command implements CommandPreRun {
     return input;
   }
 
+  resolveBinaryVersion(input: CommandLineInput) {
+    if (typeof input !== 'string') {
+      input = undefined;
+    }
+
+    return input;
+  }
+
   async preRun(inputs: CommandLineInputs, options: CommandLineOptions): Promise<void> {
     if (options['nobuild']) {
       options['build'] = false;
@@ -89,6 +102,7 @@ export class UploadCommand extends Command implements CommandPreRun {
     const note = this.resolveNote(options['note']);
     const channelTag = this.resolveChannelTag(options['deploy']);
     const metadata = this.resolveMetaData(options['metadata']);
+    const version = this.resolveBinaryVersion(options['version']);
 
     if (!(await this.env.session.isLoggedIn())) {
       await promptToLogin(this.env);
@@ -99,7 +113,7 @@ export class UploadCommand extends Command implements CommandPreRun {
       await build(this.env, inputs, options);
     }
 
-    await upload(this.env, { note, channelTag, metadata });
+    await upload(this.env, { note, channelTag, metadata, version });
   }
 
 }

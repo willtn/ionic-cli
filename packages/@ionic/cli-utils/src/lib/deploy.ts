@@ -1,10 +1,10 @@
-import { Deploy, DeployChannel, DeploySnapshot, DeploySnapshotRequest, IClient } from '../definitions';
+import { BinaryVersion, Deploy, DeployChannel, DeploySnapshot, DeploySnapshotRequest, IClient } from '../definitions';
 import { isDeployChannelResponse, isDeployResponse, isDeploySnapshotRequestResponse, isDeploySnapshotResponse } from '../guards';
 import { createFatalAPIFormat } from './http';
 import { s3SignedUpload } from './utils/aws';
 
 export class DeployClient {
-  constructor(protected appUserToken: string, protected client: IClient) {}
+  constructor(protected appUserToken: string, protected client: IClient) { }
 
   async getChannel(uuidOrTag: string): Promise<DeployChannel> {
     const { req } = await this.client.make('GET', `/deploy/channels/${uuidOrTag}`);
@@ -46,7 +46,7 @@ export class DeployClient {
     return res.data;
   }
 
-  async requestSnapshotUpload(options: { legacy_duplication?: string; note?: string; user_metadata?: Object } = {}): Promise<DeploySnapshotRequest> {
+  async requestSnapshotUpload(options: { android_version?: BinaryVersion; legacy_duplication?: string; ios_version?: BinaryVersion; note?: string; user_metadata?: Object } = {}): Promise<DeploySnapshotRequest> {
     options.legacy_duplication = '1';
 
     const { req } = await this.client.make('POST', '/deploy/snapshots');
@@ -58,9 +58,13 @@ export class DeployClient {
     }
 
     // TODO: Remove updateMetaDataReq when POST -> deploy/snapshots accepts user_metadata
-    if (options.user_metadata) {
+    if (options.user_metadata || options.android_version || options.ios_version) {
       const { req } = await this.client.make('PATCH', `/deploy/snapshots/${res.data.uuid}`);
-      req.set('Authorization', `Bearer ${this.appUserToken}`).send({ 'user_metadata': options.user_metadata });
+      req.set('Authorization', `Bearer ${this.appUserToken}`).send({
+        'android_version': options.android_version,
+        'ios_version': options.ios_version,
+        'user_metadata': options.user_metadata
+      });
       await this.client.do(req);
     }
 
