@@ -5,6 +5,7 @@ import chalk from 'chalk';
 
 import * as expressType from 'express';
 import * as proxyMiddlewareType from 'http-proxy-middleware';
+import * as http from 'http';
 
 import { IonicEnvironment, LiveReloadFunction, LogLevel, ServeDetails, ServeOptions } from '../../definitions';
 import { isDevServerMessage } from '../../guards';
@@ -251,6 +252,18 @@ async function createHttpServer(env: IonicEnvironment, options: ServeMetaOptions
         opts.secure = false;
       }
 
+      if (Boolean(proxy.proxyUrl)) {
+        opts.cookieDomainRewrite = proxy.proxyUrl;
+
+        opts.onProxyRes = function(proxyRes: http.IncomingMessage, req: http.IncomingMessage, res: http.ServerResponse) {
+          if (proxyRes.headers['set-cookie']) {
+            const cookies = proxyRes.headers['set-cookie'];
+            const newCookies = cookies ? cookies.map((cookie) => cookie.replace('Secure', '')) : cookies;
+            proxyRes.headers['set-cookie'] = newCookies;
+          }
+        };
+      }
+
       app.use(proxy.path, proxyMiddleware(proxy.path, opts));
       env.log.info(`Proxy created ${chalk.bold(proxy.path)} => ${chalk.bold(opts.target)}`);
     }
@@ -282,7 +295,7 @@ async function createHttpServer(env: IonicEnvironment, options: ServeMetaOptions
         data = data.toString();
         msg = JSON.parse(data);
       } catch (e) {
-        env.log.error(`Error parsing JSON message from dev server: "${data}" ${chalk.red(e.stack ? e.stack : e)}`);
+        env.log.error(`Error parsing JSON message from dev server: '${data}' ${chalk.red(e.stack ? e.stack : e)}`);
         return;
       }
 

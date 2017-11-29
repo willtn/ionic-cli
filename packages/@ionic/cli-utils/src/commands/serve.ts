@@ -5,7 +5,7 @@ import { str2num } from '@ionic/cli-framework/utils/string';
 
 import { CommandLineInputs, CommandLineOptions, IonicEnvironment, ServeDetails } from '../definitions';
 import { FatalException } from '../lib/errors';
-import { BIND_ALL_ADDRESS, DEFAULT_DEV_LOGGER_PORT, DEFAULT_LIVERELOAD_PORT, DEFAULT_SERVER_PORT, devAppPlugins, gatherDevAppDetails, IONIC_LAB_URL, publishDevApp } from '../lib/serve';
+import { BIND_ALL_ADDRESS, DEFAULT_DEV_LOGGER_PORT, DEFAULT_LIVERELOAD_PORT, DEFAULT_SERVER_PORT, IONIC_LAB_URL, devAppPlugins, gatherDevAppDetails, publishDevApp } from '../lib/serve';
 import { isCordovaPackageJson } from '../guards';
 
 const WATCH_BEFORE_HOOK = 'watch:before';
