@@ -11,7 +11,8 @@
     "publish:canary": "lerna publish --canary --exact --npm-tag=canary --skip-git",
     "publish:testing": "lerna publish --canary=testing --exact --npm-tag=testing --skip-git",
     "publish": "lerna publish --exact --conventional-commits",
-    "prepush": "npm run lint"
+    "prepush": "npm run lint",
+    "local": "npm run build && rm -rf ../groowin-ionic/node_modules/@ionic && rm -rf ../groowin-ionic/node_modules/ionic && cp -r packages/* ../groowin-ionic/node_modules/"
   },
   "devDependencies": {
     "@types/node": "^6.0.92",
